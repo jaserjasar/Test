@@ -9,19 +9,24 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check token
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -o /tmp/response.json -w "%{http_code}\n" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+          curl -sS -o /tmp/read.json -w "READ_STATUS=%{http_code}\n" \
+            -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }}/issues
 
       - name: Try write operation
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -o /tmp/write.json -w "%{http_code}\n" \
+          curl -sS -o /tmp/write.json -w "WRITE_STATUS=%{http_code}\n" \
             -X POST \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -H "Content-Type: application/json" \
             -d '{"title":"Actions permission test"}' \
