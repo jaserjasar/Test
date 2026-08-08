@@ -11,20 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check token
+      - name: Check repository access
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -o /tmp/read.json -w "READ_STATUS=%{http_code}\n" \
+          curl -sS -o /tmp/repo.json -w "READ_STATUS=%{http_code}\n" \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/issues
+            https://api.github.com/repos/${{ github.repository }}
 
       - name: Try issue write
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -o /tmp/write.json -w "WRITE_STATUS=%{http_code}\n" \
+          curl -sS -o /tmp/issue.json -w "ISSUE_STATUS=%{http_code}\n" \
             -X POST \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
@@ -32,14 +32,16 @@ jobs:
             -d '{"title":"Actions permission test"}' \
             https://api.github.com/repos/${{ github.repository }}/issues
 
-      - name: Test pull request write
+      - name: Try contents write
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          curl -sS -o /tmp/pr.json -w "PR_STATUS=%{http_code}\n" \
-            -X POST \
+          CONTENT=$(printf '%s' 'Permission test' | base64 -w 0)
+
+          curl -sS -o /tmp/content.json -w "CONTENT_STATUS=%{http_code}\n" \
+            -X PUT \
             -H "Authorization: Bearer $GH_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             -H "Content-Type: application/json" \
-            -d '{"title":"Permission PR test","head":"main","base":"main"}' \
-            https://api.github.com/repos/${{ github.repository }}/pulls
+            -d "{\"message\":\"Permission test\",\"content\":\"$CONTENT\"}" \
+            https://api.github.com/repos/${{ github.repository }}/contents/permission-test.txt
