@@ -20,7 +20,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }}/issues
 
-      - name: Try write operation
+      - name: Try issue write
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -31,3 +31,15 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{"title":"Actions permission test"}' \
             https://api.github.com/repos/${{ github.repository }}/issues
+
+      - name: Test pull request write
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl -sS -o /tmp/pr.json -w "PR_STATUS=%{http_code}\n" \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Content-Type: application/json" \
+            -d '{"title":"Permission PR test","head":"main","base":"main"}' \
+            https://api.github.com/repos/${{ github.repository }}/pulls
