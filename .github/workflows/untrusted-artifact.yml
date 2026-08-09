@@ -11,14 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create harmless artifact
+      - name: Create harmless execution-test artifact
         run: |
           mkdir -p artifact
-          printf '%s\n' 'LAB_EXECUTION_MARKER' > artifact/marker.txt
-          printf '%s\n' 'This is controlled lab data.' >> artifact/marker.txt
+
+          cat > artifact/test.sh <<'EOF'
+          echo "LAB_CONTROLLED_EXECUTION_MARKER" > /tmp/lab-result.txt
+          EOF
+
+          chmod +x artifact/test.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: untrusted-lab-artifact
-          path: artifact/marker.txt
+          path: artifact/test.sh
