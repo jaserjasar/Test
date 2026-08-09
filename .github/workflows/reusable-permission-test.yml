@@ -1,0 +1,44 @@
+name: Reusable Permission Test
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show workflow context
+        run: |
+          echo "REPOSITORY=$GITHUB_REPOSITORY"
+          echo "EVENT=$GITHUB_EVENT_NAME"
+          echo "WORKFLOW=$GITHUB_WORKFLOW"
+
+      - name: Test repository read permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          STATUS=$(curl -sS -o /tmp/read.json \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY")
+
+          echo "REPOSITORY_READ_STATUS=$STATUS"
+
+      - name: Test repository write permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          STATUS=$(curl -sS -o /tmp/write.json \
+            -w "%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/dispatches" \
+            -d '{"event_type":"SECURITY_LAB_NON_MUTATING_TEST"}'
+
+          echo "WRITE_TEST_STATUS=$STATUS"
