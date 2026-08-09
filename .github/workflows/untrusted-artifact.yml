@@ -1,0 +1,24 @@
+name: Untrusted Artifact Lab
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create harmless artifact
+        run: |
+          mkdir -p artifact
+          printf '%s\n' 'LAB_EXECUTION_MARKER' > artifact/marker.txt
+          printf '%s\n' 'This is controlled lab data.' >> artifact/marker.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: untrusted-lab-artifact
+          path: artifact/marker.txt
