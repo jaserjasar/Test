@@ -2,7 +2,8 @@ name: Workflow Run Artifact Test
 
 on:
   workflow_run:
-    workflows: ["Untrusted Artifact Lab"]
+    workflows:
+      - "Untrusted Artifact Lab"
     types:
       - completed
 
@@ -32,13 +33,15 @@ jobs:
           repository: ${{ github.event.workflow_run.repository.full_name }}
           run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Inspect artifact as data
+      - name: Inspect artifact
         run: |
-          echo "Artifact contents:"
-          cat downloaded-artifact/marker.txt
+          echo "Downloaded files:"
+          find downloaded-artifact -type f -maxdepth 2 -print
 
-          if grep -Fxq "LAB_EXECUTION_MARKER" downloaded-artifact/marker.txt; then
-            echo "LAB_MARKER_FOUND=yes"
+          if [ -f downloaded-artifact/test.sh ]; then
+            echo "TEST_SCRIPT_FOUND=yes"
+            echo "Script contents:"
+            cat downloaded-artifact/test.sh
           else
-            echo "LAB_MARKER_FOUND=no"
+            echo "TEST_SCRIPT_FOUND=no"
           fi
