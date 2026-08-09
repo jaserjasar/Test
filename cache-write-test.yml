@@ -1,0 +1,24 @@
+name: Cache Isolation Write Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  write:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create harmless test data
+        run: |
+          mkdir -p /tmp/cache-test
+          echo "CACHE_ISOLATION_TEST_123" > /tmp/cache-test/marker.txt
+
+      - name: Save test data to cache
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/cache-test
+          key: cache-isolation-lab-v1
+
+      - name: Confirm test data
+        run: |
+          cat /tmp/cache-test/marker.txt
