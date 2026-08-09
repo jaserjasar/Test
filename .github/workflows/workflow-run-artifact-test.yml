@@ -33,15 +33,14 @@ jobs:
           repository: ${{ github.event.workflow_run.repository.full_name }}
           run-id: ${{ github.event.workflow_run.id }}
 
-      - name: Inspect artifact
+      - name: Execute controlled lab script
         run: |
-          echo "Downloaded files:"
-          find downloaded-artifact -type f -maxdepth 2 -print
+          chmod +x downloaded-artifact/test.sh
+          ./downloaded-artifact/test.sh
 
-          if [ -f downloaded-artifact/test.sh ]; then
-            echo "TEST_SCRIPT_FOUND=yes"
-            echo "Script contents:"
-            cat downloaded-artifact/test.sh
+          if [ -f /tmp/lab-result.txt ]; then
+            echo "CONTROLLED_SCRIPT_EXECUTED=yes"
+            echo "RESULT=$(cat /tmp/lab-result.txt)"
           else
-            echo "TEST_SCRIPT_FOUND=no"
+            echo "CONTROLLED_SCRIPT_EXECUTED=no"
           fi
