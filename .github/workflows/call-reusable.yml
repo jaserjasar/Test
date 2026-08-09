@@ -1,10 +1,10 @@
-name: Call Reusable Permission Test
+name: Call Reusable Permission Inheritance Test
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   call-test:
