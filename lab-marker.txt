@@ -1,1 +1,1 @@
-Untrusted Artifact Lab
+ARTIFACT_EXECUTION_TEST
