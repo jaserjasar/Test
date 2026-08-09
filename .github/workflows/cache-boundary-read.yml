@@ -1,0 +1,27 @@
+name: Cache Boundary Read Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Restore base repository cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/cache-test
+          key: cache-boundary-base-v1
+
+      - name: Check cache result
+        run: |
+          echo "CACHE_HIT=${{ steps.cache.outputs.cache-hit }}"
+
+          if [ -f /tmp/cache-test/marker.txt ]; then
+            echo "CROSS_REPOSITORY_CACHE_FOUND=yes"
+            echo "CACHE_CONTENT=$(cat /tmp/cache-test/marker.txt)"
+          else
+            echo "CROSS_REPOSITORY_CACHE_FOUND=no"
+          fi
