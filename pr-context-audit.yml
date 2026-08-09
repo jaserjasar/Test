@@ -1,0 +1,44 @@
+name: PR Context Audit
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Report event context
+        run: |
+          echo "EVENT_NAME=${{ github.event_name }}"
+          echo "REPOSITORY=${{ github.repository }}"
+          echo "BASE_REPOSITORY=${{ github.event.repository.full_name }}"
+          echo "HEAD_REPOSITORY=${{ github.event.pull_request.head.repo.full_name }}"
+          echo "HEAD_REF=${{ github.event.pull_request.head.ref }}"
+          echo "BASE_REF=${{ github.event.pull_request.base.ref }}"
+          echo "RUNNER_REPOSITORY=${{ github.repository }}"
+
+      - name: Verify this is a pull_request event
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "PR_EVENT_CONFIRMED=yes"
+          else
+            echo "PR_EVENT_CONFIRMED=no"
+          fi
+
+      - name: Check read-only repository access
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          STATUS=$(curl -sS \
+            -o /tmp/repo.json \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}")
+
+          echo "REPOSITORY_READ_STATUS=$STATUS"
