@@ -1,0 +1,44 @@
+name: Workflow Run Artifact Test
+
+on:
+  workflow_run:
+    workflows: ["Untrusted Artifact Lab"]
+    types:
+      - completed
+
+permissions:
+  actions: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Show triggering workflow information
+        run: |
+          echo "WORKFLOW_NAME=${{ github.event.workflow_run.name }}"
+          echo "WORKFLOW_RUN_ID=${{ github.event.workflow_run.id }}"
+          echo "CONCLUSION=${{ github.event.workflow_run.conclusion }}"
+          echo "HEAD_REPOSITORY=${{ github.event.workflow_run.head_repository.full_name }}"
+          echo "BASE_REPOSITORY=${{ github.event.workflow_run.repository.full_name }}"
+          echo "HEAD_BRANCH=${{ github.event.workflow_run.head_branch }}"
+
+      - name: Download the controlled artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: untrusted-lab-artifact
+          path: downloaded-artifact
+          github-token: ${{ github.token }}
+          repository: ${{ github.event.workflow_run.repository.full_name }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Inspect artifact as data
+        run: |
+          echo "Artifact contents:"
+          cat downloaded-artifact/marker.txt
+
+          if grep -Fxq "LAB_EXECUTION_MARKER" downloaded-artifact/marker.txt; then
+            echo "LAB_MARKER_FOUND=yes"
+          else
+            echo "LAB_MARKER_FOUND=no"
+          fi
