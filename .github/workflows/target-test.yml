@@ -8,12 +8,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check dummy secret
-        env:
-          TEST_SECRET: ${{ secrets.TEST_SECRET }}
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check for harmless lab marker
         run: |
-          if [ -n "$TEST_SECRET" ]; then
-            echo "DUMMY_SECRET_AVAILABLE=yes"
+          if grep -R "LAB_MARKER_123" . --exclude-dir=.git >/dev/null 2>&1; then
+            echo "UNTRUSTED_PR_CODE_EXECUTION_CONTEXT=yes"
           else
-            echo "DUMMY_SECRET_AVAILABLE=no"
+            echo "UNTRUSTED_PR_CODE_EXECUTION_CONTEXT=no"
           fi
