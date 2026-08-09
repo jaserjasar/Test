@@ -1,0 +1,24 @@
+name: Cache Isolation Read Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Restore test cache
+        uses: actions/cache/restore@v4
+        with:
+          path: /tmp/cache-test
+          key: cache-isolation-lab-v1
+
+      - name: Check restored data
+        run: |
+          if [ -f /tmp/cache-test/marker.txt ]; then
+            echo "CACHE_FOUND=yes"
+            echo "CACHE_CONTENT=$(cat /tmp/cache-test/marker.txt)"
+          else
+            echo "CACHE_FOUND=no"
+          fi
