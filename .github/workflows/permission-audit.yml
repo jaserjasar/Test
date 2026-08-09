@@ -1,0 +1,27 @@
+name: Permission Audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check repository permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Testing repository API access..."
+
+          STATUS=$(curl -sS \
+            -o /tmp/response.json \
+            -w "%{http_code}" \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents")
+
+          echo "CONTENTS_API_STATUS=$STATUS"
