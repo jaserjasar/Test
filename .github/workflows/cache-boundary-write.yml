@@ -1,0 +1,24 @@
+name: Cache Boundary Write Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  write:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create harmless marker
+        run: |
+          mkdir -p /tmp/cache-test
+          echo "CACHE_BOUNDARY_BASE_456" > /tmp/cache-test/marker.txt
+
+      - name: Save base repository cache
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/cache-test
+          key: cache-boundary-base-v1
+
+      - name: Verify marker
+        run: |
+          cat /tmp/cache-test/marker.txt
