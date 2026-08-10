@@ -1,0 +1,11 @@
+name: Call Reusable Permission Inheritance Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  call:
+    uses: jaserjasar/Test/.github/workflows/reusable-permission-test.yml@main
