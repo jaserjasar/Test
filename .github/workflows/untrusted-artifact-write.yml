@@ -1,0 +1,27 @@
+name: Untrusted Artifact Boundary Test
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create harmless marker
+        run: |
+          mkdir -p /tmp/artifact-test
+          echo "UNTRUSTED_ARTIFACT_MARKER_789" > /tmp/artifact-test/marker.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: untrusted-artifact-boundary-lab
+          path: /tmp/artifact-test/marker.txt
+
+      - name: Verify marker
+        run: |
+          cat /tmp/artifact-test/marker.txt
