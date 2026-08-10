@@ -20,33 +20,31 @@ jobs:
         env:
           RUN_ID: ${{ github.event.workflow_run.id }}
           HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
-          BASE_REPOSITORY: ${{ github.repository }}
+          BASE_REPOSITORY: ${{ github.event.workflow_run.repository.full_name }}
           CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          echo "BASE_REPOSITORY=$BASE_REPOSITORY"
-          echo "HEAD_REPOSITORY=$HEAD_REPOSITORY"
           echo "RUN_ID=$RUN_ID"
+          echo "HEAD_REPOSITORY=$HEAD_REPOSITORY"
+          echo "BASE_REPOSITORY=$BASE_REPOSITORY"
           echo "CONCLUSION=$CONCLUSION"
 
-          if [ "$HEAD_REPOSITORY" != "$BASE_REPOSITORY" ]; then
-            echo "UNTRUSTED_HEAD_REPOSITORY=yes"
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: untrusted-lab-artifact
+          github-token: ${{ github.token }}
+          repository: ${{ github.event.workflow_run.repository.full_name }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: downloaded-artifact
+
+      - name: Execute harmless marker
+        run: |
+          chmod +x downloaded-artifact/test.sh
+          ./downloaded-artifact/test.sh
+
+          if [ -f /tmp/lab-result.txt ]; then
+            echo "CONTROLLED_SCRIPT_EXECUTED=yes"
+            echo "RESULT=$(cat /tmp/lab-result.txt)"
           else
-            echo "UNTRUSTED_HEAD_REPOSITORY=no"
+            echo "CONTROLLED_SCRIPT_EXECUTED=no"
           fi
-
-      - name: List artifacts from triggering run
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ github.event.workflow_run.id }}
-        run: |
-          echo "ARTIFACT_LIST_STATUS=$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts" \
-            --silent >/tmp/artifacts.json && echo 200 || echo failed)"
-
-          cat /tmp/artifacts.json
-
-      - name: Safety decision
-        run: |
-          echo "ARTIFACTS_EXECUTED=no"
-          echo "NO_SECRETS_USED=yes"
-          echo "PROVENANCE_CHECK_COMPLETED=yes"
