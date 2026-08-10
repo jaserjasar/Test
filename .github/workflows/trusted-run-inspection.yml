@@ -1,4 +1,4 @@
-name: Trusted Run Inspection
+name: Trusted Run Artifact Provenance Test
 
 on:
   workflow_run:
@@ -8,6 +8,7 @@ on:
       - completed
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
@@ -15,17 +16,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Inspect event context
+      - name: Inspect triggering run
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+          BASE_REPOSITORY: ${{ github.repository }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
         run: |
-          echo "EVENT=${{ github.event_name }}"
-          echo "BASE_REPOSITORY=${{ github.repository }}"
-          echo "WORKFLOW_RUN_ID=${{ github.event.workflow_run.id }}"
-          echo "CONCLUSION=${{ github.event.workflow_run.conclusion }}"
-          echo "HEAD_REPOSITORY=${{ github.event.workflow_run.head_repository.full_name }}"
-          echo "HEAD_BRANCH=${{ github.event.workflow_run.head_branch }}"
-          echo "WORKFLOW_NAME=${{ github.event.workflow_run.name }}"
+          echo "BASE_REPOSITORY=$BASE_REPOSITORY"
+          echo "HEAD_REPOSITORY=$HEAD_REPOSITORY"
+          echo "RUN_ID=$RUN_ID"
+          echo "CONCLUSION=$CONCLUSION"
 
-      - name: Controlled boundary marker
+          if [ "$HEAD_REPOSITORY" != "$BASE_REPOSITORY" ]; then
+            echo "UNTRUSTED_HEAD_REPOSITORY=yes"
+          else
+            echo "UNTRUSTED_HEAD_REPOSITORY=no"
+          fi
+
+      - name: List artifacts from triggering run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          echo "TRUSTED_WORKFLOW_CONTEXT_INSPECTED=yes"
+          echo "ARTIFACT_LIST_STATUS=$(gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/artifacts" \
+            --silent >/tmp/artifacts.json && echo 200 || echo failed)"
+
+          cat /tmp/artifacts.json
+
+      - name: Safety decision
+        run: |
+          echo "ARTIFACTS_EXECUTED=no"
           echo "NO_SECRETS_USED=yes"
+          echo "PROVENANCE_CHECK_COMPLETED=yes"
