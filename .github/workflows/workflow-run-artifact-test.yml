@@ -1,30 +1,46 @@
-name: Untrusted Artifact Lab
+name: Workflow Run Artifact Test
 
 on:
-  workflow_dispatch:
-  pull_request:
+  workflow_run:
+    workflows:
+      - "Untrusted Artifact Lab"
+    types:
+      - completed
 
 permissions:
-  contents: read
+  actions: read
 
 jobs:
-  produce:
+  inspect:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create harmless artifact
+      - name: Show triggering workflow information
         run: |
-          mkdir -p artifact
+          echo "WORKFLOW_NAME=${{ github.event.workflow_run.name }}"
+          echo "WORKFLOW_RUN_ID=${{ github.event.workflow_run.id }}"
+          echo "CONCLUSION=${{ github.event.workflow_run.conclusion }}"
+          echo "HEAD_REPOSITORY=${{ github.event.workflow_run.head_repository.full_name }}"
+          echo "BASE_REPOSITORY=${{ github.event.workflow_run.repository.full_name }}"
+          echo "HEAD_BRANCH=${{ github.event.workflow_run.head_branch }}"
 
-          cat > artifact/test.sh <<'EOF'
-          #!/bin/bash
-          echo "UNTRUSTED_ARTIFACT_EXECUTION_MARKER" > /tmp/lab-result.txt
-          EOF
-
-          chmod +x artifact/test.sh
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Download the controlled artifact
+        uses: actions/download-artifact@v4
         with:
           name: untrusted-lab-artifact
-          path: artifact/test.sh
+          path: downloaded-artifact
+          github-token: ${{ github.token }}
+          repository: ${{ github.event.workflow_run.repository.full_name }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Execute controlled lab script
+        run: |
+          chmod +x downloaded-artifact/test.sh
+          ./downloaded-artifact/test.sh
+
+          if [ -f /tmp/lab-result.txt ]; then
+            echo "CONTROLLED_SCRIPT_EXECUTED=yes"
+            echo "RESULT=$(cat /tmp/lab-result.txt)"
+          else
+            echo "CONTROLLED_SCRIPT_EXECUTED=no"
+          fi
