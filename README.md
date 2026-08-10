@@ -1,1 +1,1 @@
-Security workflow test
+CACHE_BOUNDARY_TRIGGER_001
