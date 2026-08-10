@@ -1,0 +1,31 @@
+name: Trusted Run Inspection
+
+on:
+  workflow_run:
+    workflows:
+      - "Untrusted Artifact Lab"
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Inspect event context
+        run: |
+          echo "EVENT=${{ github.event_name }}"
+          echo "BASE_REPOSITORY=${{ github.repository }}"
+          echo "WORKFLOW_RUN_ID=${{ github.event.workflow_run.id }}"
+          echo "CONCLUSION=${{ github.event.workflow_run.conclusion }}"
+          echo "HEAD_REPOSITORY=${{ github.event.workflow_run.head_repository.full_name }}"
+          echo "HEAD_BRANCH=${{ github.event.workflow_run.head_branch }}"
+          echo "WORKFLOW_NAME=${{ github.event.workflow_run.name }}"
+
+      - name: Controlled boundary marker
+        run: |
+          echo "TRUSTED_WORKFLOW_CONTEXT_INSPECTED=yes"
+          echo "NO_SECRETS_USED=yes"
