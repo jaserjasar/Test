@@ -1,6 +1,7 @@
-name: Untrusted Artifact Boundary Test
+name: Untrusted Artifact Lab
 
 on:
+  workflow_dispatch:
   pull_request:
 
 permissions:
@@ -11,17 +12,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create harmless marker
+      - name: Create harmless artifact
         run: |
-          mkdir -p /tmp/artifact-test
-          echo "UNTRUSTED_ARTIFACT_MARKER_789" > /tmp/artifact-test/marker.txt
+          mkdir -p artifact
+
+          cat > artifact/test.sh <<'EOF'
+          #!/bin/bash
+          echo "UNTRUSTED_ARTIFACT_EXECUTION_MARKER" > /tmp/lab-result.txt
+          EOF
+
+          chmod +x artifact/test.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: untrusted-artifact-boundary-lab
-          path: /tmp/artifact-test/marker.txt
-
-      - name: Verify marker
-        run: |
-          cat /tmp/artifact-test/marker.txt
+          name: untrusted-lab-artifact
+          path: artifact/test.sh
