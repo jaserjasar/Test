@@ -18,13 +18,15 @@ jobs:
           path: /tmp/cache-test
           key: cache-boundary-base-v2
 
-      - name: Inspect result
+      - name: Report result
+        env:
+          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
         run: |
-          echo "CACHE_HIT=${{ steps.cache.outputs.cache-hit }}"
+          echo "CACHE_HIT=$CACHE_HIT"
 
           if [ -f /tmp/cache-test/marker.txt ]; then
             echo "CACHE_FOUND=yes"
             echo "CACHE_CONTENT=$(cat /tmp/cache-test/marker.txt)"
           else
             echo "CACHE_FOUND=no"
-          fii
+          fi
