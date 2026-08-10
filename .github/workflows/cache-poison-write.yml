@@ -1,0 +1,27 @@
+name: Cache Poisoning Lab - Untrusted Writer
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  write:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create harmless untrusted marker
+        run: |
+          mkdir -p /tmp/cache-poison-test
+          echo "UNTRUSTED_CACHE_MARKER_789" > /tmp/cache-poison-test/marker.txt
+
+      - name: Attempt cache save
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/cache-poison-test
+          key: cache-poisoning-lab-v1
+
+      - name: Show marker
+        run: |
+          cat /tmp/cache-poison-test/marker.txt
