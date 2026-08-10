@@ -1,0 +1,40 @@
+name: PR Trust Boundary Test
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - edited
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Inspect PR provenance
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          BASE_REPOSITORY: ${{ github.event.pull_request.base.repo.full_name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          echo "BASE_REPOSITORY=$BASE_REPOSITORY"
+          echo "HEAD_REPOSITORY=$HEAD_REPOSITORY"
+          echo "HEAD_SHA=$HEAD_SHA"
+          echo "PR_TITLE=$PR_TITLE"
+
+          if [ "$HEAD_REPOSITORY" != "$BASE_REPOSITORY" ]; then
+            echo "UNTRUSTED_HEAD=yes"
+          else
+            echo "UNTRUSTED_HEAD=no"
+          fi
+
+      - name: Controlled marker
+        run: |
+          echo "TRUST_BOUNDARY_INSPECTED=yes"
+          echo "NO_SECRETS_USED=yes"
