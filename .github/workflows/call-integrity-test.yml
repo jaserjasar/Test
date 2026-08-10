@@ -8,4 +8,5 @@ permissions:
 
 jobs:
   call:
-  uses: jaserjasar/Test/.github/workflows/reusable-integrity-test.yml@8276e6b86a4ec22d678f811872cccdb7f53897cc
+    uses: jaserjasar/Test/.github/workflows/reusable-integrity-test.yml@8276e6b86a4ec22d678f811872cccd
+b7f53897cc
