@@ -1,0 +1,11 @@
+name: Call Integrity Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  call:
+    uses: jaserjasar/Test/.github/workflows/reusable-integrity-test.yml@main
