@@ -13,4 +13,4 @@ jobs:
     steps:
       - name: Show trusted workflow marker
         run: |
-          echo "TRUSTED_WORKFLOW_MARKER=BASE_VERSION_1"
+          echo "TRUSTED_WORKFLOW_MARKER=BASE_VERSION_2"
